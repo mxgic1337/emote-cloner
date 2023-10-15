@@ -70,7 +70,7 @@ export class EmoteCommand extends Command {
                             })
                             .setTimestamp()
                             .setColor('#00ff59')
-                            .setDescription(`Successfully added <{${emoji.animated ? 'a' : ''}:${emoji.name}:${emoji.id}> **${emote.name}${name !== emote.name ? ` (${name})` : ''}** emote to Discord\nSelected size: \`${sizeOption !== null ? sizeOption.value : emote.animated && !disableAnimations? '1x (Default)' : '4x (Default)'}\``)
+                            .setDescription(`Successfully added <${emoji.animated ? 'a' : ''}:${emoji.name}:${emoji.id}> **${emote.name}${name !== emote.name ? ` (${name})` : ''}** emote to Discord\nSelected size: \`${sizeOption !== null ? sizeOption.value : emote.animated && !disableAnimations? '1x (Default)' : '4x (Default)'}\``)
                             .setFields([
                                 {
                                     name: 'State',
