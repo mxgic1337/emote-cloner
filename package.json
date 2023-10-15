@@ -1,13 +1,13 @@
 {
   "name": "7tv-importer",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "Discord bot that imports 7TV emotes.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "mxgic1337_",
   "license": "ISC",
   "dependencies": {
     "discord.js": "^14.13.0",
