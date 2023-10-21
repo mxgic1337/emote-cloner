@@ -20,3 +20,15 @@ Emote Cloner is **not affiliated** with Twitch, BetterTTV, FrankerFaceZ or 7TV.
     - 🛑 **disable_animations** - If animated, emote will be uploaded as static image
 
 ![/emote Usage example](.github/example1.gif)
+
+## 🚀 Run it for yourself
+- Clone this repository. 
+- Run `npm install` to install required dependencies.
+- Create an application on [Discord Developer Portal](https://discord.com/developers/applications).
+- Create file named `.env`, and add this information to it:
+```dotenv
+CLIENT_ID= # Your app's client ID
+TOKEN= # Your app's bot token
+```
+- Run `npm run build` to build the bot.
+- After building, run `npm run start` to start the bot.
