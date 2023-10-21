@@ -5,8 +5,8 @@ import {EmoteCommand} from "./commands/impl/EmoteCommand";
 
 dotenv.config()
 
-export const clientId = '' + process.env.CLIENT_ID;
-export const token: string = '' + process.env.TOKEN
+export const clientId = '' + (process.env.DEV_MODE === "true" ? process.env.DEV_CLIENT_ID : process.env.CLIENT_ID);
+export const token: string = '' + (process.env.DEV_MODE === "true" ? process.env.DEV_TOKEN : process.env.TOKEN)
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.on('ready', (c)=>{

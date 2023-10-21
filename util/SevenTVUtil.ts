@@ -1,13 +1,5 @@
-export function isURLValid(url: string, urlType: 'emotes' | 'users' | 'emote-sets') {
-    switch (urlType) {
-        default:
-            return /^((http|https):\/\/)(www.|)7tv.app\/emotes\/[a-zA-Z0-9]{24}/gi.test(url)
-        case 'users':
-            return /^((http|https):\/\/)(www.|)7tv.app\/users\/[a-zA-Z0-9]{24}/gi.test(url)
-        case 'emote-sets':
-            return /^((http|https):\/\/)(www.|)7tv.app\/emote-sets\/[a-zA-Z0-9]{24}/gi.test(url)
-    }
-}
+import {Emote} from "./BetterTTVUtil";
+
 
 export async function getEmoteDataFromURL(url: string) {
     return await getEmoteData(url.split('/')[4].split('/')[0])
@@ -16,7 +8,17 @@ export async function getEmoteDataFromURL(url: string) {
 export async function getEmoteData(id: string) {
     const response = await fetch('https://7tv.io/v3/emotes/' + id)
     if (response.ok) {
-        return await response.json()
+        const emote = await response.json();
+        return {
+            platform: '7tv',
+            name: emote.name,
+            hostURL: 'https:' + emote.host.url + '/{{size}}',
+            animated: emote.animated,
+            author: {
+                name: emote.owner.display_name,
+                avatar: 'https:' + emote.owner.avatar_url,
+            }
+        } as Emote
     }else{
         const text = await response.text()
         console.error(text)

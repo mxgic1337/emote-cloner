@@ -1,5 +1,4 @@
 import {
-    ApplicationCommandOptionType,
     ChatInputCommandInteraction,
     PermissionFlagsBits,
     REST,
@@ -12,7 +11,7 @@ import {clientId, token} from "../bot";
 const commandData = [
     new SlashCommandBuilder()
         .setName("emote")
-        .setDescription("Adds an 7TV emote.")
+        .setDescription("Adds an BetterTTV/7TV emote.")
         .addStringOption(option =>
             option.setName('url')
                 .setDescription("Emote URL")
@@ -23,7 +22,7 @@ const commandData = [
                 .addChoices(
                     {name: '1x', value: '1x'},
                     {name: '2x', value: '2x'},
-                    {name: '4x', value: '4x'},
+                    {name: '4x (3x on BTTV)', value: '4x'},
                 ))
         .addStringOption(option =>
             option.setName('name')

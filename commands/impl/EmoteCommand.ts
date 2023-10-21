@@ -1,6 +1,8 @@
 import {Command} from "../commands";
 import {ChatInputCommandInteraction, EmbedBuilder} from "discord.js";
-import {getEmoteDataFromURL, isURLValid} from "../../util/SevenTVUtil";
+import {Emote, getEmoteDataFromURL as getBTTVEmote} from "../../util/BetterTTVUtil";
+import {getEmoteDataFromURL as get7TVEmote} from "../../util/SevenTVUtil";
+import {isEmoteURL} from "../../util/URLUtil";
 
 export class EmoteCommand extends Command {
     constructor() {
@@ -11,15 +13,50 @@ export class EmoteCommand extends Command {
             const disableAnimationsOption = interaction.options.get('disable_animations');
             if (urlOption === null) return;
             const emoteURL: string = urlOption.value as string
-            if (isURLValid(emoteURL, 'emotes')) {
-                const emote = await getEmoteDataFromURL(emoteURL);
-                const name = nameOption !== null ? nameOption.value : emote.name
+            const platform = isEmoteURL(emoteURL);
+            if (platform !== undefined) {
+                let emote: Emote | undefined;
+                switch (platform) {
+                    case '7tv':
+                        emote = await get7TVEmote(emoteURL)
+                        break
+                    case 'bttv':
+                        emote = await getBTTVEmote(emoteURL)
+                        break
+                    default:
+                        emote = undefined
+                }
+                if (emote === undefined) return;
+                const name: string = nameOption !== null ? nameOption.value as string : emote.name
                 const disableAnimations = disableAnimationsOption !== null ? disableAnimationsOption.value as boolean : false
+
+                const animatedURL = emote.hostURL.replace('{{size}}', sizeOption !== null ? platform === 'bttv' && sizeOption.value === '4x' ? '3x' : '4x' : '1x') + '.gif';
+                const animatedFullURL = emote.hostURL.replace('{{size}}', platform === 'bttv' ? '3x' : '4x') + '.gif';
+                const staticURL = emote.hostURL.replace('{{size}}', sizeOption !== null ? platform === 'bttv' && sizeOption.value === '4x' ? '3x' : '4x' : platform === 'bttv' ? '3x' : '4x') + '.webp';
+                const staticFullURL = emote.hostURL.replace('{{size}}', platform === 'bttv' ? '3x' : '4x') + '.webp';
+                
+                let platformIcon: string;
+                let platformText: string;
+                switch (emote.platform) {
+                    case "bttv":
+                        platformIcon = '<:BetterTTV:1165355805487399097>';
+                        platformText = 'BetterTTV'
+                        break;
+                    case "ffz":
+                        platformIcon = '<:FrankerFaceZ:1165355987096580097>';
+                        platformText = 'FrankerFaceZ'
+                        break;
+                    case "7tv":
+                        platformIcon = '<:7TV:1165355988841402458>';
+                        platformText = '7TV'
+                        break;
+                }
+
                 const embed = new EmbedBuilder()
-                    .setTitle(`${emote.name} by ${emote.owner.display_name}`)
+                    .setTitle(`${emote.name} by ${emote.author.name}`)
                     .setAuthor({
-                        name: emote.owner.display_name,
-                        iconURL: 'https:' + emote.owner.avatar_url
+                        name: emote.author.name,
+                        iconURL: emote.author.avatar
                     })
                     .setTimestamp()
                     .setFooter({
@@ -41,7 +78,7 @@ export class EmoteCommand extends Command {
                         },
                         {
                             name: 'Emote Author',
-                            value: emote.owner.display_name,
+                            value: emote.author.name,
                             inline: true,
                         },
                         {
@@ -49,20 +86,29 @@ export class EmoteCommand extends Command {
                             value: emote.animated ? `Yes${disableAnimations ? ' (Disabled)' : ''}` : 'No',
                             inline: true,
                         },
+                        {
+                            name: 'Platform',
+                            value: `${platformIcon} ${platformText}`,
+                            inline: true,
+                        },
                     ])
-                    .setThumbnail(emote.animated ? 'https:' + emote.host.url + `/4x.gif` : 'https:' + emote.host.url + `/4x.webp`)
-                interaction.reply({embeds: [embed]}).then(()=>{
+                    .setThumbnail(emote.animated ? emote.hostURL.replace('{{size}}', sizeOption !== null ? platform === "bttv" && (sizeOption.value as string) === "4x" ? "3x" : sizeOption.value as string : '4x.gif') : emote.hostURL.replace('{{size}}', sizeOption !== null ? platform === "bttv" && (sizeOption.value as string) === "4x" ? "3x" : sizeOption.value as string : platform === 'bttv' ? '3x.webp' : '4x.webp'))
+                interaction.reply({embeds: [embed]}).then(() => {
                     if (!interaction.guild) return;
+                    if (emote === undefined) return;
                     interaction.guild.emojis.create({
-                        attachment: emote.animated && !disableAnimations ? 'https:' + emote.host.url + `/${sizeOption !== null ? sizeOption.value : '1x'}.gif` : 'https:' + emote.host.url + `/${sizeOption !== null ? sizeOption.value : '4x'}.webp`,
-                        name: name
+                        attachment: emote.animated && !disableAnimations ?
+                            animatedURL :
+                            staticURL,
+                            name: name
                     }).then(emoji => {
                         console.error(`Uploaded emote in guild ${interaction.guildId}.`)
+                        if (emote === undefined) return;
                         const embed = new EmbedBuilder()
-                            .setTitle(`${emote.name} by ${emote.owner.display_name}`)
+                            .setTitle(`${emote.name} by ${emote.author.name}`)
                             .setAuthor({
-                                name: emote.owner.display_name,
-                                iconURL: 'https:' + emote.owner.avatar_url
+                                name: emote.author.name,
+                                iconURL: emote.author.avatar
                             })
                             .setFooter({
                                 text: 'Added by ' + interaction.user.username,
@@ -70,7 +116,7 @@ export class EmoteCommand extends Command {
                             })
                             .setTimestamp()
                             .setColor('#00ff59')
-                            .setDescription(`Successfully added <${emoji.animated ? 'a' : ''}:${emoji.name}:${emoji.id}> **${emote.name}${name !== emote.name ? ` (${name})` : ''}** emote to Discord\nSelected size: \`${sizeOption !== null ? sizeOption.value : emote.animated && !disableAnimations? '1x (Default)' : '4x (Default)'}\``)
+                            .setDescription(`Successfully added <${emoji.animated ? 'a' : ''}:${emoji.name}:${emoji.id}> **${emote.name}${name !== emote.name ? ` (${name})` : ''}** emote to Discord\nSelected size: \`${sizeOption !== null ? sizeOption.value : emote.animated && !disableAnimations ? '1x (Default)' : '4x (Default)'}\``)
                             .setFields([
                                 {
                                     name: 'State',
@@ -84,7 +130,7 @@ export class EmoteCommand extends Command {
                                 },
                                 {
                                     name: 'Emote Author',
-                                    value: emote.owner.display_name,
+                                    value: emote.author.name,
                                     inline: true,
                                 },
                                 {
@@ -92,16 +138,22 @@ export class EmoteCommand extends Command {
                                     value: emote.animated ? `Yes${disableAnimations ? ' (Disabled)' : ''}` : 'No',
                                     inline: true,
                                 },
+                                {
+                                    name: 'Platform',
+                                    value: `${platformIcon} ${platformText}`,
+                                    inline: true,
+                                },
                             ])
-                            .setThumbnail(emote.animated ? 'https:' + emote.host.url + '/4x.gif' : 'https:' + emote.host.url + '/4x.webp')
+                            .setThumbnail(emote.animated ? animatedFullURL : staticFullURL)
                         interaction.editReply({embeds: [embed]})
                     }).catch(err => {
                         console.error(`Emote upload in guild ${interaction.guildId} failed: ${err.message}`)
+                        if (emote === undefined) return;
                         const embed = new EmbedBuilder()
-                            .setTitle(`${emote.name} by ${emote.owner.display_name}`)
+                            .setTitle(`${emote.name} by ${emote.author.name}`)
                             .setAuthor({
-                                name: emote.owner.display_name,
-                                iconURL: 'https:' + emote.owner.avatar_url
+                                name: emote.author.name,
+                                iconURL: emote.author.avatar
                             })
                             .setDescription(`Selected size: \`${sizeOption !== null ? sizeOption.value : emote.animated && !disableAnimations ? '1x (Default)' : '4x (Default)'}\``)
                             .setTimestamp()
@@ -128,7 +180,7 @@ export class EmoteCommand extends Command {
                                 },
                                 {
                                     name: 'Emote Author',
-                                    value: emote.owner.display_name,
+                                    value: emote.author.name,
                                     inline: true,
                                 },
                                 {
@@ -136,8 +188,13 @@ export class EmoteCommand extends Command {
                                     value: emote.animated ? `Yes${disableAnimations ? ' (Disabled)' : ''}` : 'No',
                                     inline: true,
                                 },
+                                {
+                                    name: 'Platform',
+                                    value: `${platformIcon} ${platformText}`,
+                                    inline: true,
+                                },
                             ])
-                            .setThumbnail(emote.animated ? 'https:' + emote.host.url + '/4x.gif' : 'https:' + emote.host.url + '/4x.webp')
+                            .setThumbnail(emote.animated ? animatedFullURL : staticFullURL)
                         interaction.editReply({embeds: [embed]})
                     })
                 })
@@ -151,7 +208,7 @@ export class EmoteCommand extends Command {
                     })
                     .setTimestamp()
                     .setColor('#ff2020')
-                    .setDescription("`❌` Invalid 7TV emote URL.")
+                    .setDescription("`❌` Invalid emote URL.\nCurrently supported platforms: `BetterTTV, 7TV`")
                 console.log(interaction.user)
                 interaction.reply({embeds: [embed]}).then()
             }

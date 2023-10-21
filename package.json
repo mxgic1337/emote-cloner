@@ -1,16 +1,29 @@
 {
-  "name": "7tv-importer",
-  "version": "1.0.1",
-  "description": "Discord bot that imports 7TV emotes.",
-  "main": "index.js",
+  "name": "emote-cloner",
+  "version": "1.1.0",
+  "description": "Discord bot that clones BTTV/7TV emotes.",
+  "main": "dist/bot.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "ts-node-dev bot.ts",
+    "start": "node dist/bot.js",
+    "build": "tsc"
   },
+  "homepage": "https://github.com/mxgic1337/emote-cloner",
   "keywords": [],
   "author": "mxgic1337_",
-  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mxgic1337/emote-cloner/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mxgic1337/emote-cloner"
+  },
+  "license": "GPL-3.0",
   "dependencies": {
     "discord.js": "^14.13.0",
     "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "ts-node-dev": "^2.0.0"
   }
 }
