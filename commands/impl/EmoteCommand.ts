@@ -197,6 +197,18 @@ export class EmoteCommand extends Command {
                             .setThumbnail(emote.animated ? animatedFullURL : staticFullURL)
                         interaction.editReply({embeds: [embed]})
                     })
+                }).catch(err => {
+                    console.error(err)
+                    const embed = new EmbedBuilder()
+                        .setTitle("Error")
+                        .setAuthor({
+                            name: interaction.user.displayName,
+                            iconURL: `https://cdn.discordapp.com/avatars/${interaction.user.id}/${interaction.user.avatar}.jpeg`
+                        })
+                        .setTimestamp()
+                        .setColor('#ff2020')
+                        .setDescription("`❌` Failed to send a status message.\nError: `"+err.message+"`")
+                    interaction.reply({embeds: [embed]}).then().catch(console.error)
                 })
 
             } else {
@@ -209,7 +221,6 @@ export class EmoteCommand extends Command {
                     .setTimestamp()
                     .setColor('#ff2020')
                     .setDescription("`❌` Invalid emote URL.\nCurrently supported platforms: `BetterTTV, 7TV`")
-                console.log(interaction.user)
                 interaction.reply({embeds: [embed]}).then()
             }
         });

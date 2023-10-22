@@ -15,7 +15,10 @@ Emote Cloner is **not affiliated** with Twitch, BetterTTV, FrankerFaceZ or 7TV.
   - 🔒 This command requires **Manage Expressions** permission.
   - ⚙️ Parameters:
     - 🔗 **url** (Required) - Emote URL (Supported platforms: BTTV, 7TV)
-    - 🔼 **size** - Emote size - 1x, 2x, 4x (3x for BTTV)
+    - 🔼 **size** - Emote size
+      - 1x,
+      - 2x,
+      - 4x (3x for BetterTTV)
     - 📝 **name** - Override default emote name
     - 🛑 **disable_animations** - If animated, emote will be uploaded as static image
 
