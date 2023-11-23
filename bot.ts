@@ -1,4 +1,4 @@
-import {Client, GatewayIntentBits} from "discord.js";
+import {Client, GatewayIntentBits, ActivityType} from "discord.js";
 import dotenv from 'dotenv'
 import {commandList, registerCommands} from "./commands/commands";
 import {EmoteCommand} from "./commands/impl/EmoteCommand";
@@ -13,12 +13,14 @@ client.on('ready', (c)=>{
     registerCommands().then()
     commandList.push(new EmoteCommand())
     console.log(`Bot is ready. Logged in as ${c.user.tag}`)
-    c.user.setPresence({
-        status: 'online',
-        activities: [
-            {name: '/emote'}
-        ]
-    })
+    setInterval(()=>{
+        c.user.setPresence({
+            status: 'online',
+            activities: [
+                {name: `/emote`, type: ActivityType.Watching, state: `Cloning emotes on ${c.guilds.cache.size} servers! ✨`},
+            ],
+        })
+    }, 60000)
 })
 
 client.on('interactionCreate', (interaction)=>{

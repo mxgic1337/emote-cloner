@@ -1,7 +1,7 @@
 # Emote Cloner
 **Emote Cloner** is a Discord bot that clones emotes from BetterTTV and 7TV into Discord.
 
-Emote Cloner is **not affiliated** with Twitch, BetterTTV, FrankerFaceZ or 7TV.
+Emote Cloner is **not affiliated** with Discord, Twitch, BetterTTV, FrankerFaceZ or 7TV.
 
 ## 🔗 Links
 - [🤖 Invite Link](https://discord.com/api/oauth2/authorize?client_id=1163079809719611413&permissions=8799314249792&scope=bot)

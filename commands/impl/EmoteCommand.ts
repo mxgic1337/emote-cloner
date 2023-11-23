@@ -52,7 +52,7 @@ export class EmoteCommand extends Command {
                         break;
                 }
 
-                const embed = new EmbedBuilder()
+                let embed = new EmbedBuilder()
                     .setTitle(`${emote.name} by ${emote.author.name}`)
                     .setAuthor({
                         name: emote.author.name,
@@ -92,7 +92,7 @@ export class EmoteCommand extends Command {
                             inline: true,
                         },
                     ])
-                    .setThumbnail(emote.animated ? emote.hostURL.replace('{{size}}', sizeOption !== null ? platform === "bttv" && (sizeOption.value as string) === "4x" ? "3x" : sizeOption.value as string : '4x.gif') : emote.hostURL.replace('{{size}}', sizeOption !== null ? platform === "bttv" && (sizeOption.value as string) === "4x" ? "3x" : sizeOption.value as string : platform === 'bttv' ? '3x.webp' : '4x.webp'))
+                    .setThumbnail(emote.animated ? animatedFullURL : staticFullURL)
                 interaction.reply({embeds: [embed]}).then(() => {
                     if (!interaction.guild) return;
                     if (emote === undefined) return;
@@ -104,18 +104,7 @@ export class EmoteCommand extends Command {
                     }).then(emoji => {
                         console.error(`Uploaded emote in guild ${interaction.guildId}.`)
                         if (emote === undefined) return;
-                        const embed = new EmbedBuilder()
-                            .setTitle(`${emote.name} by ${emote.author.name}`)
-                            .setAuthor({
-                                name: emote.author.name,
-                                iconURL: emote.author.avatar
-                            })
-                            .setFooter({
-                                text: 'Added by ' + interaction.user.username,
-                                iconURL: interaction.user.avatarURL() !== null ? '' + interaction.user.avatarURL() : interaction.user.defaultAvatarURL
-                            })
-                            .setTimestamp()
-                            .setColor('#00ff59')
+                        embed.setColor('#00ff59')
                             .setDescription(`Successfully added <${emoji.animated ? 'a' : ''}:${emoji.name}:${emoji.id}> **${emote.name}${name !== emote.name ? ` (${name})` : ''}** emote to Discord\nSelected size: \`${sizeOption !== null ? sizeOption.value : emote.animated && !disableAnimations ? '1x (Default)' : '4x (Default)'}\``)
                             .setFields([
                                 {
@@ -144,23 +133,11 @@ export class EmoteCommand extends Command {
                                     inline: true,
                                 },
                             ])
-                            .setThumbnail(emote.animated ? animatedFullURL : staticFullURL)
                         interaction.editReply({embeds: [embed]})
                     }).catch(err => {
                         console.error(`Emote upload in guild ${interaction.guildId} failed: ${err.message}`)
                         if (emote === undefined) return;
-                        const embed = new EmbedBuilder()
-                            .setTitle(`${emote.name} by ${emote.author.name}`)
-                            .setAuthor({
-                                name: emote.author.name,
-                                iconURL: emote.author.avatar
-                            })
-                            .setDescription(`Selected size: \`${sizeOption !== null ? sizeOption.value : emote.animated && !disableAnimations ? '1x (Default)' : '4x (Default)'}\``)
-                            .setTimestamp()
-                            .setFooter({
-                                text: 'Added by ' + interaction.user.username,
-                                iconURL: interaction.user.avatarURL() !== null ? '' + interaction.user.avatarURL() : interaction.user.defaultAvatarURL
-                            })
+                        embed.setDescription(`Selected size: \`${sizeOption !== null ? sizeOption.value : emote.animated && !disableAnimations ? '1x (Default)' : '4x (Default)'}\``)
                             .setColor('#ff2020')
                             .setFields([
                                 {
@@ -170,7 +147,7 @@ export class EmoteCommand extends Command {
                                 },
                                 {
                                     name: 'Error Message',
-                                    value: '`' + err.message + '`',
+                                    value: '`' + errorMessage(err) + '`',
                                     inline: false,
                                 },
                                 {
@@ -194,7 +171,6 @@ export class EmoteCommand extends Command {
                                     inline: true,
                                 },
                             ])
-                            .setThumbnail(emote.animated ? animatedFullURL : staticFullURL)
                         interaction.editReply({embeds: [embed]})
                     })
                 }).catch(err => {
@@ -225,4 +201,10 @@ export class EmoteCommand extends Command {
             }
         });
     }
+}
+
+function errorMessage(err: Error) {
+    if (err.message.includes("Asset exceeds maximum size:") || err.message.includes("Failed to resize asset below the maximum size:")) {return "Emote is too big."}
+    else if (err.message.includes("name[STRING_TYPE_REGEX]")) {return "Emote name is invalid."}
+    else return err.message
 }
