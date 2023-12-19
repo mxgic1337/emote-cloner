@@ -28,7 +28,7 @@ Emote Cloner is **not affiliated** with Discord, Twitch, BetterTTV, FrankerFaceZ
 - Clone this repository. 
 - Run `npm install` to install required dependencies.
 - Create an application on [Discord Developer Portal](https://discord.com/developers/applications).
-- Create file named `.env`, and add this information to it:
+- Create file named `.env`, and add this to it:
 ```dotenv
 CLIENT_ID= # Your app's client ID
 TOKEN= # Your app's bot token

@@ -30,9 +30,9 @@ export class EmoteCommand extends Command {
                 const name: string = nameOption !== null ? nameOption.value as string : emote.name
                 const disableAnimations = disableAnimationsOption !== null ? disableAnimationsOption.value as boolean : false
 
-                const animatedURL = emote.hostURL.replace('{{size}}', sizeOption !== null ? platform === 'bttv' && sizeOption.value === '4x' ? '3x' : '4x' : '1x') + '.gif';
+                const animatedURL = emote.hostURL.replace('{{size}}', sizeOption !== null ? platform === 'bttv' && sizeOption.value === '4x' ? '3x' : sizeOption.value as string : '2x') + '.gif';
                 const animatedFullURL = emote.hostURL.replace('{{size}}', platform === 'bttv' ? '3x' : '4x') + '.gif';
-                const staticURL = emote.hostURL.replace('{{size}}', sizeOption !== null ? platform === 'bttv' && sizeOption.value === '4x' ? '3x' : '4x' : platform === 'bttv' ? '3x' : '4x') + '.webp';
+                const staticURL = emote.hostURL.replace('{{size}}', sizeOption !== null ? platform === 'bttv' && sizeOption.value === '4x' ? '3x' : sizeOption.value as string : platform === 'bttv' ? '3x' : '4x') + '.webp';
                 const staticFullURL = emote.hostURL.replace('{{size}}', platform === 'bttv' ? '3x' : '4x') + '.webp';
                 
                 let platformIcon: string;
@@ -53,138 +53,57 @@ export class EmoteCommand extends Command {
                 }
 
                 let embed = new EmbedBuilder()
-                    .setTitle(`${emote.name} by ${emote.author.name}`)
                     .setAuthor({
+                        url: undefined,
                         name: emote.author.name,
                         iconURL: emote.author.avatar
                     })
+                    .setTitle(`${emote.name} by ${emote.author.name} (${platformText})`)
+                    .setDescription('Uploading emote to Discord...')
+                    .setThumbnail(emote.animated && !disableAnimations ? animatedFullURL : staticFullURL)
                     .setTimestamp()
                     .setFooter({
-                        text: 'Added by ' + interaction.user.username,
-                        iconURL: interaction.user.avatarURL() !== null ? '' + interaction.user.avatarURL() : interaction.user.defaultAvatarURL
+                        text: `Executed by @${interaction.user.username}`
                     })
-                    .setDescription(`Uploading emote to Discord...\nSelected size: \`${sizeOption !== null ? sizeOption.value : emote.animated && !disableAnimations ? '1x (Default)' : '4x (Default)'}\``)
-                    .setColor('#333333')
+                    .setColor('#262626')
                     .setFields([
                         {
-                            name: 'State',
-                            value: 'Uploading to Discord...',
-                            inline: false,
+                            name: 'Platform:',
+                            value: `${platformIcon} ${platformText}`
                         },
                         {
-                            name: 'Emote Name',
-                            value: emote.name,
-                            inline: true,
+                            name: 'Selected size:',
+                            value: sizeOption !== null ? sizeOption.value as string : 'Default'
                         },
                         {
-                            name: 'Emote Author',
-                            value: emote.author.name,
-                            inline: true,
-                        },
-                        {
-                            name: 'Animated?',
-                            value: emote.animated ? `Yes${disableAnimations ? ' (Disabled)' : ''}` : 'No',
-                            inline: true,
-                        },
-                        {
-                            name: 'Platform',
-                            value: `${platformIcon} ${platformText}`,
-                            inline: true,
+                            name: 'Animated:',
+                            value: emote.animated ? disableAnimations ? 'No (Disabled)' : 'Yes' : 'No'
                         },
                     ])
-                    .setThumbnail(emote.animated ? animatedFullURL : staticFullURL)
-                interaction.reply({embeds: [embed]}).then(() => {
-                    if (!interaction.guild) return;
-                    if (emote === undefined) return;
-                    interaction.guild.emojis.create({
-                        attachment: emote.animated && !disableAnimations ?
-                            animatedURL :
-                            staticURL,
-                            name: name
+                interaction.reply({embeds: [embed]}).then(()=>{
+                    const guild = interaction.guild;
+                    if (guild === null || emote === undefined) return;
+                    console.log(`Uploading to Discord: ${emote.animated && !disableAnimations ? animatedURL : staticURL } ${guild.id}`)
+                    guild.emojis.create({
+                        attachment: emote.animated && !disableAnimations ? animatedURL : staticURL,
+                        name: name,
+                        reason: `@${interaction.user.username} used /emote`
                     }).then(emoji => {
-                        console.error(`Uploaded emote in guild ${interaction.guildId}.`)
                         if (emote === undefined) return;
-                        embed.setColor('#00ff59')
-                            .setDescription(`Successfully added <${emoji.animated ? 'a' : ''}:${emoji.name}:${emoji.id}> **${emote.name}${name !== emote.name ? ` (${name})` : ''}** emote to Discord\nSelected size: \`${sizeOption !== null ? sizeOption.value : emote.animated && !disableAnimations ? '1x (Default)' : '4x (Default)'}\``)
-                            .setFields([
-                                {
-                                    name: 'State',
-                                    value: 'Done',
-                                    inline: false,
-                                },
-                                {
-                                    name: 'Emote Name',
-                                    value: emote.name,
-                                    inline: true,
-                                },
-                                {
-                                    name: 'Emote Author',
-                                    value: emote.author.name,
-                                    inline: true,
-                                },
-                                {
-                                    name: 'Animated?',
-                                    value: emote.animated ? `Yes${disableAnimations ? ' (Disabled)' : ''}` : 'No',
-                                    inline: true,
-                                },
-                                {
-                                    name: 'Platform',
-                                    value: `${platformIcon} ${platformText}`,
-                                    inline: true,
-                                },
-                            ])
+                        embed
+                            .setDescription(`Emote ${emoji.toString()} **${emoji.name}** uploaded to Discord!`)
+                            .setThumbnail(emote.animated && !disableAnimations ? animatedFullURL : staticFullURL)
+                            .setColor('#00ff59')
                         interaction.editReply({embeds: [embed]})
                     }).catch(err => {
-                        console.error(`Emote upload in guild ${interaction.guildId} failed: ${err.message}`)
                         if (emote === undefined) return;
-                        embed.setDescription(`Selected size: \`${sizeOption !== null ? sizeOption.value : emote.animated && !disableAnimations ? '1x (Default)' : '4x (Default)'}\``)
-                            .setColor('#ff2020')
-                            .setFields([
-                                {
-                                    name: 'State',
-                                    value: 'Failed',
-                                    inline: false,
-                                },
-                                {
-                                    name: 'Error Message',
-                                    value: '`' + errorMessage(err) + '`',
-                                    inline: false,
-                                },
-                                {
-                                    name: 'Emote Name',
-                                    value: emote.name,
-                                    inline: true,
-                                },
-                                {
-                                    name: 'Emote Author',
-                                    value: emote.author.name,
-                                    inline: true,
-                                },
-                                {
-                                    name: 'Animated?',
-                                    value: emote.animated ? `Yes${disableAnimations ? ' (Disabled)' : ''}` : 'No',
-                                    inline: true,
-                                },
-                                {
-                                    name: 'Platform',
-                                    value: `${platformIcon} ${platformText}`,
-                                    inline: true,
-                                },
-                            ])
+                        embed
+                            .setDescription(`\`❌\` Upload failed:\n**\`${errorMessage(err)}\`**
+                            \nReport bugs/issues on [GitHub](<https://github.com/mxgic1337/emote-cloner/issues>).`)
+                            .setThumbnail(emote.animated && !disableAnimations ? animatedFullURL : staticFullURL)
+                            .setColor('#ff2323')
                         interaction.editReply({embeds: [embed]})
                     })
-                }).catch(err => {
-                    console.error(err)
-                    const embed = new EmbedBuilder()
-                        .setTitle("Error")
-                        .setAuthor({
-                            name: interaction.user.displayName,
-                            iconURL: `https://cdn.discordapp.com/avatars/${interaction.user.id}/${interaction.user.avatar}.jpeg`
-                        })
-                        .setTimestamp()
-                        .setColor('#ff2020')
-                        .setDescription("`❌` Failed to send a status message.\nError: `"+err.message+"`")
-                    interaction.reply({embeds: [embed]}).then().catch(console.error)
                 })
 
             } else {
