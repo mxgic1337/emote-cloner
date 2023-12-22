@@ -80,31 +80,49 @@ export class EmoteCommand extends Command {
                             value: emote.animated ? disableAnimations ? 'No (Disabled)' : 'Yes' : 'No'
                         },
                     ])
-                interaction.reply({embeds: [embed]}).then(()=>{
-                    const guild = interaction.guild;
-                    if (guild === null || emote === undefined) return;
-                    console.log(`Uploading to Discord: ${emote.animated && !disableAnimations ? animatedURL : staticURL } ${guild.id}`)
-                    guild.emojis.create({
-                        attachment: emote.animated && !disableAnimations ? animatedURL : staticURL,
-                        name: name,
-                        reason: `@${interaction.user.username} used /emote`
-                    }).then(emoji => {
-                        if (emote === undefined) return;
-                        embed
-                            .setDescription(`Emote ${emoji.toString()} **${emoji.name}** uploaded to Discord!`)
-                            .setThumbnail(emote.animated && !disableAnimations ? animatedFullURL : staticFullURL)
-                            .setColor('#00ff59')
-                        interaction.editReply({embeds: [embed]})
-                    }).catch(err => {
-                        if (emote === undefined) return;
-                        embed
-                            .setDescription(`\`❌\` Upload failed:\n**\`${errorMessage(err)}\`**
+                try {
+                    interaction.reply({embeds: [embed]}).then(()=>{
+                        const guild = interaction.guild;
+                        if (guild === null || emote === undefined) return;
+                        console.log(`Uploading to Discord: ${emote.animated && !disableAnimations ? animatedURL : staticURL } ${guild.id}`)
+                        guild.emojis.create({
+                            attachment: emote.animated && !disableAnimations ? animatedURL : staticURL,
+                            name: name,
+                            reason: `@${interaction.user.username} used /emote`
+                        }).then(async emoji => {
+                            if (emote === undefined) return;
+                            embed
+                                .setDescription(`Emote ${emoji.toString()} **${emoji.name}** uploaded to Discord!`)
+                                .setThumbnail(emote.animated && !disableAnimations ? animatedFullURL : staticFullURL)
+                                .setColor('#00ff59')
+                            interaction.editReply({embeds: [embed]}).catch(err => {
+                                const channel = interaction.channel;
+                                console.error(err)
+                                if (channel === null) return
+                                if (channel.isTextBased()) {
+                                    channel.send(`<@${interaction.user.id}>\n**Your emote was uploaded!**\n${emoji.toString()} ${emoji.name}`)
+                                }
+                            })
+                        }).catch(async err => {
+                            if (emote === undefined) return;
+                            embed
+                                .setDescription(`\`❌\` Upload failed:\n**\`${errorMessage(err)}\`**
                             \nReport bugs/issues on [GitHub](<https://github.com/mxgic1337/emote-cloner/issues>).`)
-                            .setThumbnail(emote.animated && !disableAnimations ? animatedFullURL : staticFullURL)
-                            .setColor('#ff2323')
-                        interaction.editReply({embeds: [embed]})
+                                .setThumbnail(emote.animated && !disableAnimations ? animatedFullURL : staticFullURL)
+                                .setColor('#ff2323')
+                            interaction.editReply({embeds: [embed]}).catch(err2 => {
+                                const channel = interaction.channel;
+                                console.error(err2)
+                                if (channel === null) return
+                                if (channel.isTextBased()) {
+                                    channel.send(`<@${interaction.user.id}>\n**Upload failed.**\n${errorMessage(err)}`)
+                                }
+                            })
+                        })
                     })
-                })
+                }catch (err) {
+                    console.error(err)
+                }
 
             } else {
                 const embed = new EmbedBuilder()
