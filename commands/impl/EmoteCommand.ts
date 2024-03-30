@@ -26,7 +26,21 @@ export class EmoteCommand extends Command {
                     default:
                         emote = undefined
                 }
-                if (emote === undefined) return;
+                if (emote === undefined) {
+                    const embed = new EmbedBuilder()
+                        .setTitle("Error")
+                        .setAuthor({
+                            name: interaction.user.displayName,
+                            iconURL: `https://cdn.discordapp.com/avatars/${interaction.user.id}/${interaction.user.avatar}.jpeg`
+                        })
+                        .setTimestamp()
+                        .setColor('#ff2020')
+                        .setDescription("`❌` Emote not found.")
+                    interaction.reply({embeds: [embed]}).then()
+                    return
+                }
+
+                await interaction.deferReply();
                 const name: string = nameOption !== null ? nameOption.value as string : emote.name
                 const disableAnimations = disableAnimationsOption !== null ? disableAnimationsOption.value as boolean : false
 
@@ -58,6 +72,7 @@ export class EmoteCommand extends Command {
                         name: emote.author.name,
                         iconURL: emote.author.avatar
                     })
+                    .setURL(emoteURL)
                     .setTitle(`${emote.name} by ${emote.author.name} (${platformText})`)
                     .setDescription('Uploading emote to Discord...')
                     .setThumbnail(emote.animated && !disableAnimations ? animatedFullURL : staticFullURL)
@@ -81,7 +96,7 @@ export class EmoteCommand extends Command {
                         },
                     ])
                 try {
-                    interaction.reply({embeds: [embed]}).then(()=>{
+                    interaction.editReply({embeds: [embed]}).then(()=>{
                         const guild = interaction.guild;
                         if (guild === null || emote === undefined) return;
                         console.log(`Uploading to Discord: ${emote.animated && !disableAnimations ? animatedURL : staticURL } ${guild.id}`)
@@ -134,14 +149,14 @@ export class EmoteCommand extends Command {
                     .setTimestamp()
                     .setColor('#ff2020')
                     .setDescription("`❌` Invalid emote URL.\nCurrently supported platforms: `BetterTTV, 7TV`")
-                interaction.reply({embeds: [embed]}).then()
+                interaction.editReply({embeds: [embed]}).then()
             }
         });
     }
 }
 
 function errorMessage(err: Error) {
-    if (err.message.includes("Asset exceeds maximum size:") || err.message.includes("Failed to resize asset below the maximum size:")) {return "Emote is too big."}
-    else if (err.message.includes("name[STRING_TYPE_REGEX]")) {return "Emote name is invalid."}
+    if (err.message.includes("Asset exceeds maximum size:") || err.message.includes("Failed to resize asset below the maximum size:")) {return "Emote is too big. You can try to change it's size by using the \"size\" parameter."}
+    else if (err.message.includes("name[STRING_TYPE_REGEX]")) {return "Emote name is invalid. You can change the name with the \"name\" parameter."}
     else return err.message
 }
