@@ -149,7 +149,7 @@ export class EmoteCommand extends Command {
                     .setTimestamp()
                     .setColor('#ff2020')
                     .setDescription("`❌` Invalid emote URL.\nCurrently supported platforms: `BetterTTV, 7TV`")
-                interaction.editReply({embeds: [embed]}).then()
+                interaction.reply({embeds: [embed]}).then()
             }
         });
     }
