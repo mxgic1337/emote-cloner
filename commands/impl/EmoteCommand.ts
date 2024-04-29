@@ -40,104 +40,108 @@ export class EmoteCommand extends Command {
                     return
                 }
 
-                await interaction.deferReply();
-                const name: string = nameOption !== null ? nameOption.value as string : emote.name
-                const disableAnimations = disableAnimationsOption !== null ? disableAnimationsOption.value as boolean : false
+                interaction.deferReply().then(()=>{
+                    if (!emote) return
 
-                const animatedURL = emote.hostURL.replace('{{size}}', sizeOption !== null ? platform === 'bttv' && sizeOption.value === '4x' ? '3x' : sizeOption.value as string : '2x') + '.gif';
-                const animatedFullURL = emote.hostURL.replace('{{size}}', platform === 'bttv' ? '3x' : '4x') + '.gif';
-                const staticURL = emote.hostURL.replace('{{size}}', sizeOption !== null ? platform === 'bttv' && sizeOption.value === '4x' ? '3x' : sizeOption.value as string : platform === 'bttv' ? '3x' : '4x') + '.webp';
-                const staticFullURL = emote.hostURL.replace('{{size}}', platform === 'bttv' ? '3x' : '4x') + '.webp';
-                
-                let platformIcon: string;
-                let platformText: string;
-                switch (emote.platform) {
-                    case "bttv":
-                        platformIcon = '<:BetterTTV:1165355805487399097>';
-                        platformText = 'BetterTTV'
-                        break;
-                    case "ffz":
-                        platformIcon = '<:FrankerFaceZ:1165355987096580097>';
-                        platformText = 'FrankerFaceZ'
-                        break;
-                    case "7tv":
-                        platformIcon = '<:7TV:1165355988841402458>';
-                        platformText = '7TV'
-                        break;
-                }
+                    const name: string = nameOption !== null ? nameOption.value as string : emote.name
+                    const disableAnimations = disableAnimationsOption !== null ? disableAnimationsOption.value as boolean : false
 
-                let embed = new EmbedBuilder()
-                    .setAuthor({
-                        url: undefined,
-                        name: emote.author.name,
-                        iconURL: emote.author.avatar
-                    })
-                    .setURL(emoteURL)
-                    .setTitle(`${emote.name} by ${emote.author.name} (${platformText})`)
-                    .setDescription('Uploading emote to Discord...')
-                    .setThumbnail(emote.animated && !disableAnimations ? animatedFullURL : staticFullURL)
-                    .setTimestamp()
-                    .setFooter({
-                        text: `Executed by @${interaction.user.username}`
-                    })
-                    .setColor('#262626')
-                    .setFields([
-                        {
-                            name: 'Platform:',
-                            value: `${platformIcon} ${platformText}`
-                        },
-                        {
-                            name: 'Selected size:',
-                            value: sizeOption !== null ? sizeOption.value as string : 'Default'
-                        },
-                        {
-                            name: 'Animated:',
-                            value: emote.animated ? disableAnimations ? 'No (Disabled)' : 'Yes' : 'No'
-                        },
-                    ])
-                try {
-                    interaction.editReply({embeds: [embed]}).then(()=>{
-                        const guild = interaction.guild;
-                        if (guild === null || emote === undefined) return;
-                        console.log(`Uploading to Discord: ${emote.animated && !disableAnimations ? animatedURL : staticURL } ${guild.id}`)
-                        guild.emojis.create({
-                            attachment: emote.animated && !disableAnimations ? animatedURL : staticURL,
-                            name: name,
-                            reason: `@${interaction.user.username} used /emote`
-                        }).then(async emoji => {
-                            if (emote === undefined) return;
-                            embed
-                                .setDescription(`Emote ${emoji.toString()} **${emoji.name}** uploaded to Discord!`)
-                                .setThumbnail(emote.animated && !disableAnimations ? animatedFullURL : staticFullURL)
-                                .setColor('#00ff59')
-                            interaction.editReply({embeds: [embed]}).catch(err => {
-                                const channel = interaction.channel;
-                                console.error(err)
-                                if (channel === null) return
-                                if (channel.isTextBased()) {
-                                    channel.send(`<@${interaction.user.id}>\n**Your emote was uploaded!**\n${emoji.toString()} ${emoji.name}`)
-                                }
-                            })
-                        }).catch(async err => {
-                            if (emote === undefined) return;
-                            embed
-                                .setDescription(`\`❌\` Upload failed:\n**\`${errorMessage(err)}\`**
+                    const animatedURL = emote.hostURL.replace('{{size}}', sizeOption !== null ? platform === 'bttv' && sizeOption.value === '4x' ? '3x' : sizeOption.value as string : '2x') + '.gif';
+                    const animatedFullURL = emote.hostURL.replace('{{size}}', platform === 'bttv' ? '3x' : '4x') + '.gif';
+                    const staticURL = emote.hostURL.replace('{{size}}', sizeOption !== null ? platform === 'bttv' && sizeOption.value === '4x' ? '3x' : sizeOption.value as string : platform === 'bttv' ? '3x' : '4x') + '.webp';
+                    const staticFullURL = emote.hostURL.replace('{{size}}', platform === 'bttv' ? '3x' : '4x') + '.webp';
+
+                    let platformIcon: string;
+                    let platformText: string;
+                    switch (emote.platform) {
+                        case "bttv":
+                            platformIcon = '<:BetterTTV:1165355805487399097>';
+                            platformText = 'BetterTTV'
+                            break;
+                        case "ffz":
+                            platformIcon = '<:FrankerFaceZ:1165355987096580097>';
+                            platformText = 'FrankerFaceZ'
+                            break;
+                        case "7tv":
+                            platformIcon = '<:7TV:1165355988841402458>';
+                            platformText = '7TV'
+                            break;
+                    }
+
+                    let embed = new EmbedBuilder()
+                        .setAuthor({
+                            url: undefined,
+                            name: emote.author.name,
+                            iconURL: emote.author.avatar
+                        })
+                        .setURL(emoteURL)
+                        .setTitle(`${emote.name} by ${emote.author.name} (${platformText})`)
+                        .setDescription('Uploading emote to Discord...')
+                        .setThumbnail(emote.animated && !disableAnimations ? animatedFullURL : staticFullURL)
+                        .setTimestamp()
+                        .setFooter({
+                            text: `Executed by @${interaction.user.username}`
+                        })
+                        .setColor('#262626')
+                        .setFields([
+                            {
+                                name: 'Platform:',
+                                value: `${platformIcon} ${platformText}`
+                            },
+                            {
+                                name: 'Selected size:',
+                                value: sizeOption !== null ? sizeOption.value as string : 'Default'
+                            },
+                            {
+                                name: 'Animated:',
+                                value: emote.animated ? disableAnimations ? 'No (Disabled)' : 'Yes' : 'No'
+                            },
+                        ])
+                    try {
+                        interaction.editReply({embeds: [embed]}).then(()=>{
+                            const guild = interaction.guild;
+                            if (guild === null || emote === undefined) return;
+                            guild.emojis.create({
+                                attachment: emote.animated && !disableAnimations ? animatedURL : staticURL,
+                                name: name,
+                                reason: `@${interaction.user.username} used /emote`
+                            }).then(async emoji => {
+                                if (emote === undefined) return;
+                                embed
+                                    .setDescription(`Emote ${emoji.toString()} **${emoji.name}** uploaded to Discord!`)
+                                    .setThumbnail(emote.animated && !disableAnimations ? animatedFullURL : staticFullURL)
+                                    .setColor('#00ff59')
+                                interaction.editReply({embeds: [embed]}).catch(err => {
+                                    const channel = interaction.channel;
+                                    console.error(err)
+                                    if (channel === null) return
+                                    if (channel.isTextBased()) {
+                                        channel.send(`<@${interaction.user.id}>\n**Your emote was uploaded!**\n${emoji.toString()} ${emoji.name}`)
+                                    }
+                                })
+                            }).catch(async err => {
+                                if (emote === undefined) return;
+                                embed
+                                    .setDescription(`\`❌\` Upload failed:\n**\`${errorMessage(err)}\`**
                             \nReport bugs/issues on [GitHub](<https://github.com/mxgic1337/emote-cloner/issues>).`)
-                                .setThumbnail(emote.animated && !disableAnimations ? animatedFullURL : staticFullURL)
-                                .setColor('#ff2323')
-                            interaction.editReply({embeds: [embed]}).catch(err2 => {
-                                const channel = interaction.channel;
-                                console.error(err2)
-                                if (channel === null) return
-                                if (channel.isTextBased()) {
-                                    channel.send(`<@${interaction.user.id}>\n**Upload failed.**\n${errorMessage(err)}`)
-                                }
+                                    .setThumbnail(emote.animated && !disableAnimations ? animatedFullURL : staticFullURL)
+                                    .setColor('#ff2323')
+                                interaction.editReply({embeds: [embed]}).catch(err2 => {
+                                    const channel = interaction.channel;
+                                    console.error(err2)
+                                    if (channel === null) return
+                                    if (channel.isTextBased()) {
+                                        channel.send(`<@${interaction.user.id}>\n**Upload failed.**\n${errorMessage(err)}`)
+                                    }
+                                })
                             })
                         })
-                    })
-                }catch (err) {
-                    console.error(err)
-                }
+                    }catch (err) {
+                        console.error(err)
+                    }
+                }).catch((err)=>{
+                    console.error(`Failed to send a message: ${err}`)
+                })
 
             } else {
                 const embed = new EmbedBuilder()
@@ -149,7 +153,9 @@ export class EmoteCommand extends Command {
                     .setTimestamp()
                     .setColor('#ff2020')
                     .setDescription("`❌` Invalid emote URL.\nCurrently supported platforms: `BetterTTV, 7TV`")
-                interaction.reply({embeds: [embed]}).then()
+                interaction.reply({embeds: [embed]}).then().catch((err)=>{
+                    console.error(`Failed to send a message: ${err}`)
+                })
             }
         });
     }

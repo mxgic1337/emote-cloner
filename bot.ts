@@ -5,8 +5,8 @@ import {EmoteCommand} from "./commands/impl/EmoteCommand";
 
 dotenv.config()
 
-export const clientId = '' + (process.env.DEV_MODE === "true" ? process.env.DEV_CLIENT_ID : process.env.CLIENT_ID);
-export const token: string = '' + (process.env.DEV_MODE === "true" ? process.env.DEV_TOKEN : process.env.TOKEN)
+export const clientId =  (process.env.DEV_MODE === "true" ? process.env.DEV_CLIENT_ID : process.env.CLIENT_ID) as string;
+export const token: string = (process.env.DEV_MODE === "true" ? process.env.DEV_TOKEN : process.env.TOKEN) as string
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.on('ready', (c)=>{
@@ -25,9 +25,12 @@ client.on('ready', (c)=>{
 
 client.on('interactionCreate', (interaction)=>{
     if (!interaction.isChatInputCommand()) return;
-    for (const i in commandList) {
-        if (commandList[i].name === interaction.commandName) {
-            commandList[i].execute(interaction)
+    for (const command of commandList) {
+        if (command.name === interaction.commandName) {
+            command.execute(interaction).catch(err => {
+                console.error(`Command /${interaction.commandName} (${interaction.id}) failed:`);
+                console.error(err.stack);
+            })
         }
     }
 })

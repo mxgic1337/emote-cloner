@@ -36,9 +36,9 @@ const commandData = [
 
 export class Command {
     private readonly _name: string;
-    private readonly _execute: (interaction: ChatInputCommandInteraction) => void;
+    private readonly _execute: (interaction: ChatInputCommandInteraction) => Promise<void>;
 
-    constructor(name: string, execute: (interaction: ChatInputCommandInteraction) => void) {
+    constructor(name: string, execute: (interaction: ChatInputCommandInteraction) => Promise<void>) {
         this._name = name;
         this._execute = execute;
     }
@@ -48,7 +48,7 @@ export class Command {
         return this._name;
     }
 
-    get execute(): (interaction: ChatInputCommandInteraction) => void {
+    get execute(): (interaction: ChatInputCommandInteraction) => Promise<void> {
         return this._execute;
     }
 }
